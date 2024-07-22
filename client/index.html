@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/style.css" />
+    <title>fileManger</title>
+  </head>
+  <body>
+    <div class="formZone">
+      <form action="" method="post" class="login">
+        <label for="username">Enter Username</label>
+        <input type="text" id="username" />
+        <label for="password">Enter password</label>
+        <input type="password" id="password" />
+        <button type="submit">lets go</button>
+      </form>
+      <form action="" method="post" class="signup">
+        <p>לא רשומים עדיין? הרשמו כעת</p>
+        <label for="username">Enter Username</label>
+        <input type="text" id="usernameS" />
+        <label for="password">Enter password</label>
+        <input type="password" id="passwordS" />
+        <button type="submit">signup</button>
+      </form>
+    </div>
+
+    <h1 class="path"></h1>
+
+    <div class="meinFolder" style="display: none;">
+        <p class="name"></p>
+        <img src="/img/mienfolder.png" alt="meinFolder" height="100px" width="100px" />
+    </div>
+    <template>
+      <div class="tempDiv" data-url="" data-type="" data-type = "" >
+        <p class="name"></p>
+        <img src="" alt="" height="100px" width="100px" />
+        <button class="actionsBtn">פעולות</button>
+        <div class="actionMenu" style="display: none">
+          <button class="renameBtn">שנה שם</button>
+          <button class="copyBtn">העתק</button>
+          <button class="infoBtn">info</button>
+          <button class="deleteBtn">מחק</button>
+        </div>
+      </div>
+    </template>
+    <script src="/index.js"></script>
+  </body>
+</html>

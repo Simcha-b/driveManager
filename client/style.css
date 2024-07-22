@@ -1,0 +1,43 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: aquamarine;
+}
+form{
+    display: flex;
+    flex-direction: column;
+    font-size: 20px;
+    gap: 10px;
+}
+.tempDiv {
+  position: relative;
+  display: inline-block;
+  margin: 10px;
+  text-align: center;
+}
+
+.actionsBtn {
+  margin-top: 5px;
+}
+
+.actionMenu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 5px;
+  z-index: 1;
+}
+
+.actionMenu button {
+  display: block;
+  width: 100%;
+  margin-bottom: 5px;
+}
