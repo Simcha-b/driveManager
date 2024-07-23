@@ -1,6 +1,3 @@
-
-let currentUrl = "";
-
 const formZone = document.querySelector(".formZone");
 const loginForm = document.querySelector(".login");
 const signupForm = document.querySelector(".signup");
@@ -8,12 +5,13 @@ const actions = document.querySelector(".actions");
 
 const path = document.querySelector(".path");
 const temp = document.querySelector("template");
+const tempDiv = document.querySelector(".tempDiv");
 const meinFolder = document.querySelector(".meinFolder");
+const content = document.querySelector(".content");
 
+let currentUrl = "/folders";
 let currentUser = "";
 let selectedItem = null;
-
-const tempDiv = document.querySelector(".tempDiv");
 
 loginForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -33,44 +31,40 @@ async function login(username, password) {
     const user = await res.json();
     currentUser = user.username;
     console.log(user);
-    currentUrl += user.username;
+    console.log(currentUser);
     formZone.style.display = "none";
     meinFolder.style.display = "block";
-    path.textContent = currentUrl;
-
-    // const dir = await fetch(`http://localhost:3000/${user.username}`);
-    // const d = await dir.json();
-    // console.log(d);
-    // actions.style.display = "block";
-    // path.textContent = currentUrl;
-    // for (let i = 0; i < d.length; i++) {
-    //   createFileElement(d[i]);
+    updateDisplay(currentUser);
   }
 }
-meinFolder.addEventListener("click", ()=>{
-  updateDisplay(currentUser);
-});
 
 async function updateDisplay(dir) {
-  meinFolder.style.display = "none";
   document.querySelectorAll(".tempDiv").forEach((el) => el.remove());
-  currentUrl+= `/${dir}`;
+  const res1 = await fetch(
+    `http://localhost:3000/${currentUser}/folder/enter/${dir}`
+  );
+  currentUrl = res1.text();
   path.textContent = currentUrl;
-  const res = await fetch(`http://localhost:3000/enter/${dir}`);
+
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/folder/show/${dir}`
+  );
   const items = await res.json();
+  console.log(items);
+
   for (let item of items) {
-    const fileElement = createFileElement(item);
-    document.body.appendChild(fileElement);
+    const element = createElement(item);
+    content.appendChild(element);
   }
 }
 
-function createFileElement(item) {
-  const clon = temp.content.cloneNode(true);
-  const tempDiv = clon.querySelector(".tempDiv");
-  const name = clon.querySelector(".name");
-  const img = clon.querySelector("img");
-  const actionsBtn = clon.querySelector(".actionsBtn");
-  const actionMenu = clon.querySelector(".actionMenu");
+function createElement(item) {
+  const clone = temp.content.cloneNode(true);
+  const tempDiv = clone.querySelector(".tempDiv");
+  const name = clone.querySelector(".name");
+  const img = clone.querySelector("img");
+  // const actionsBtn = clone.querySelector(".actionsBtn");
+  // const actionMenu = clone.querySelector(".actionMenu");
 
   name.textContent = item.name;
   tempDiv.setAttribute("data-url", `${currentUrl}/${item.name}`);
@@ -78,112 +72,162 @@ function createFileElement(item) {
   tempDiv.setAttribute("data-name", item.name);
   img.setAttribute("src", item.isFile ? "./img/file.png" : "./img/folder.png");
 
+  //הצגת תפריטי הפעולות בלחיצה על האלמנטים
   tempDiv.addEventListener("click", (e) => {
-    updateDisplay(item.name);
+    document.querySelector(`.${tempDiv.dataset.type}_actions`).style.display =
+      "block";
+    selectedItem = tempDiv;
   });
-
-  actionsBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    actionMenu.style.display =
-      actionMenu.style.display === "none" ? "block" : "none";
-  });
-
-  // הוספת מאזיני אירועים לכפתורי הפעולות
-  clon.querySelector(".renameBtn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    renameItem(tempDiv);
-  });
-
-  clon.querySelector(".copyBtn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    copyItem(tempDiv);
-  });
-
-  clon.querySelector(".deleteBtn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    deleteItem(tempDiv);
-  });
-  clon.querySelector(".infoBtn").addEventListener("click", (e) => {
-    e.stopPropagation();
-    infoItem(tempDiv);
-  });
-
   return tempDiv;
 }
 
-async function renameItem(tempDiv) {
-  const newName = prompt("הזן שם חדש:");
-  if (newName) {
-    const oldPath = tempDiv.dataset.url;
-    const newPath = `${currentUrl}/${newName}`;
-    const res = await fetch(
-      `http://localhost:3000/${currentUser}/${oldPath}/${newPath}/rename`
-    );
-    if (res.ok) {
-      const info = await res.json();
-      console.log(info);
-    } else {
-      console.log("שגיאה");
-    }
-  }
-}
-
-async function copyItem(tempDiv) {
-  const res = await fetch(
-    `http://localhost:3000/${currentUser}/copy/${tempDiv.dataset.url}`
-  );
-  if (res.ok) {
-    updateDisplay();
-  }
-}
-
-async function deleteItem(tempDiv) {
-  // const confirmDelete = confirm("האם אתה בטוח שברצונך למחוק פריט זה?");
-  // if (confirmDelete) {
-  const res = await fetch(
-    `http://localhost:3000/${currentUser}/delete/${tempDiv.dataset.name}`,
-    {
-      method: "DELETE",
-    }
-  );
-  if (res.ok) {
-    updateDisplay();
-  }
-}
-
-async function infoItem(tempDiv) {
-  const res = await fetch(
-    `http://localhost:3000/${currentUser}/info/${tempDiv.dataset.name}`,
-    {
-      method: "GET",
-    }
-  );
-  if (res.ok) {
-    let d = await res.json();
-    console.log(d);
-  }
-}
-async function showItem(tempDiv) {
-  if (tempDiv.getAttribute("data-type") === "folder") {
-
-  } else {
-    const res = await fetch(
-      `http://localhost:3000/${currentUser}/show/${tempDiv.dataset.url}`,
-      {
-        method: "GET",
+const btns = document.querySelectorAll(".action");
+btns.forEach((btn) => {
+  btn.addEventListener("click", (ev) => {
+    if (selectedItem.dataset.type === "file") {
+      switch (btn.textContent) {
+        case "info":
+          infoFile();
+          break;
+        case "show":
+          showFile();
+          break;
+        case "copy":
+          copyFile();
+          break;
+        case "rename":
+          renameFile();
+          break;
+        case "move":
+          moveFile();
+          break;
+        case "delete":
+          deleteFile();
+          break;
       }
-    );
-    if (res.ok) {
-      let data = await res.json();
-      
+    } else if (selectedItem.dataset.type === "folder") {
+      switch (btn.textContent) {
+        case "info":
+          infoFolder();
+          break;
+        case "show":
+          showFolder();
+          break;
+        case "rename":
+          renameFolder();
+          break;
+        case "delete":
+          deleteFolder();
+          break;
+      }
     }
+  });
+});
+
+const popup = document.querySelector(".popup");
+
+async function showFile() {
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/show/${selectedItem.dataset.name}`
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function infoFile() {
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/info/${selectedItem.dataset.name}`
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function copyFile() {
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/copy/${selectedItem.dataset.name}`
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function renameFile() {
+  const newname = prompt("Enter new name: ");
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/rename/${selectedItem.dataset.name}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        newname: newname,
+      }),
+    }
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function moveFile() {
+  const newpath = prompt("Enter new name: ");
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/move/${selectedItem.dataset.name}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        newpath: newpath,
+      }),
+    }
+  );
+  if (res.ok) popup.textContent = res;
+}
+
+async function deleteFile() {
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/delete/${selectedItem.dataset.name}`,
+    { method: "DELETE" }
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function showFolder() {
+  const path = await fetch(
+    `http://localhost:3000/${currentUser}/folder/enter/${selectedItem.dataset.name}`
+  );
+  if (path.ok) {
+    const res = await fetch(
+      `http://localhost:3000/${currentUser}/folder/show/${selectedItem.dataset.name}`
+    );
   }
 }
+async function infoFolder() {
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/folder/info/${selectedItem.dataset.name}`
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function renameFolder() {
+  const newpath = prompt("Enter new name: ");
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/folder/rename/${selectedItem.dataset.name}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        newname: newname,
+      }),
+    }
+  );
+  if (res.ok) popup.textContent = res;
+}
+async function deleteFolder() {
+  const res = await fetch(
+    `http://localhost:3000/${currentUser}/file/delete/${selectedItem.dataset.name}`,
+    { method: "DELETE" }
+  );
+  if (res.ok) popup.textContent = res;
+}
+
 // מאזין אירועים לסגירת תפריטי הפעולות כשלוחצים מחוץ להם
 document.body.addEventListener("click", () => {
-  document.querySelectorAll(".actionMenu").forEach((menu) => {
-    menu.style.display = "none";
-  });
+  document.querySelector(".actions").style.display = "none";
+  document.querySelector(".popup").textContent = "";
 });
 
 signupForm.addEventListener("submit", (e) => {
@@ -192,6 +236,7 @@ signupForm.addEventListener("submit", (e) => {
   const password = document.querySelector("#passwordS").value;
   signup(username, password);
 });
+
 async function signup(username, password) {
   const res = await fetch("http://localhost:3000/signup", {
     method: "POST",
@@ -210,16 +255,5 @@ async function signup(username, password) {
     document.body.appendChild(clon);
   }
 }
-
-// tempDiv.addEventListener("click", (e) => {
-//   if (e.target.data - type == "file") {
-//      show();
-//   } else if (e.target.data - type == "folder") {
-//     enter();
-//   }
-// });
-
-// async function enter() {
-//   const res = await fetch(`http://localhost:3000/${e.target.data - url}`);
-//   currentUrl = res;
-// }
+//כפתור ניתוק
+// document.querySelector("")

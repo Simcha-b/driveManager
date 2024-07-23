@@ -7,43 +7,67 @@
     <title>fileManger</title>
   </head>
   <body>
-    <div class="formZone">
-      <form action="" method="post" class="login">
-        <label for="username">Enter Username</label>
-        <input type="text" id="username" />
-        <label for="password">Enter password</label>
-        <input type="password" id="password" />
-        <button type="submit">lets go</button>
-      </form>
-      <form action="" method="post" class="signup">
-        <p>לא רשומים עדיין? הרשמו כעת</p>
-        <label for="username">Enter Username</label>
-        <input type="text" id="usernameS" />
-        <label for="password">Enter password</label>
-        <input type="password" id="passwordS" />
-        <button type="submit">signup</button>
-      </form>
-    </div>
-
-    <h1 class="path"></h1>
-
-    <div class="meinFolder" style="display: none;">
-        <p class="name"></p>
-        <img src="/img/mienfolder.png" alt="meinFolder" height="100px" width="100px" />
-    </div>
-    <template>
-      <div class="tempDiv" data-url="" data-type="" data-type = "" >
-        <p class="name"></p>
-        <img src="" alt="" height="100px" width="100px" />
-        <button class="actionsBtn">פעולות</button>
-        <div class="actionMenu" style="display: none">
-          <button class="renameBtn">שנה שם</button>
-          <button class="copyBtn">העתק</button>
-          <button class="infoBtn">info</button>
-          <button class="deleteBtn">מחק</button>
-        </div>
+    <header>
+      <button id="logoutButton">Logout</button>
+    </header>
+    <main>
+      <div class="formZone">
+        <form action="" class="login">
+          <label for="username">Enter Username</label>
+          <input type="text" id="username" />
+          <label for="password">Enter password</label>
+          <input type="password" id="password" />
+          <button type="submit">lets go</button>
+        </form>
+        <form action="" method="post" class="signup">
+          <p>לא רשומים עדיין? הרשמו כעת</p>
+          <label for="username">Enter Username</label>
+          <input type="text" id="usernameS" />
+          <label for="password">Enter password</label>
+          <input type="password" id="passwordS" />
+          <button type="submit">signup</button>
+        </form>
       </div>
-    </template>
+
+      <div class="meinFolder" style="display: none">
+        <h1 class="path"></h1>
+        <div class="content">
+          <div class="popup">
+            <span class="close">&times;</span>
+          </div>
+        </div>
+        <!-- <p class="name"></p>
+        <img
+          src="/img/mienfolder.png"
+          alt="meinFolder"
+          height="100px"
+          width="100px"
+        /> -->
+      </div>
+
+      <template>
+        <div class="tempDiv" data-url="" data-type="">
+          <p class="name"></p>
+          <img src="" alt="" height="100px" width="100px" />
+        </div>
+      </template>
+
+      <div class="file_actions" style="display: none">
+        <button class="action file show">show</button>
+        <button class="action file info">info</button>
+        <button class="action file rename">rename</button>
+        <button class="action file copy">copy</button>
+        <button class="action file move">move</button>
+        <button class="action file delete">delete</button>
+      </div>
+      <div class="folder_actions" style="display: none;">
+        <button class="action folder show">show</button>
+        <button class="action folder info">info</button>
+        <button class="action folder rename">rename</button>
+        <button class="action folder delete">delete</button>
+      </div>
+    </main>
+
     <script src="/index.js"></script>
   </body>
 </html>

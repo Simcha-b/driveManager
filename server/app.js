@@ -2,81 +2,110 @@ const express = require("express");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const cors = require('cors');
+const cors = require("cors");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../client")));
 
-
 let localPath = "folders";
 let cmd = path.join(__dirname, localPath);
-
-// app.get("/favicon.ico", (req, res) => res.status(204));
 
 /**---------------------util method--------------------- */
 function getUsers() {
   return JSON.parse(fs.readFileSync("users.json", "utf-8"));
 }
 
-/**-------------------get method------------------------- */
-// app.get("/", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../client", "index.html"));
-// });
-app.get("/enter/:folder", (req, res) => {
-  localPath += `/${req.params.folder}`;
-  cmd = path.join(__dirname, localPath);
-
-  fs.readdir(`${localPath}`, "utf-8", (err, files) => {
+/**------------------------file rating-------------------- */
+//info
+app.get("/:user/file/info/:filename", (req, res) => {
+  fs.stat(`${localPath}/${req.params.filename}`, (err, info) => {
     if (err) {
-      console.error("error in read the folder", err);
-      return;
+      console.error(err);
     }
-    const content = [];
-    files.forEach((element) => {
-      let info = fs.statSync(`${localPath}/${element}`);
-      let temp = {
-        name: element,
-        isFile: info.isFile(),
-      };
-      content.push(temp);
-    });
-    res.send(JSON.stringify(content));
-  });
-});
-
-app.get("/:user/info/:item", (req, res) => {
-  fs.stat(`${localPath}/${req.params.item}`, (err, info) => {
-    console.log(info);
     res.send(info);
   });
 });
-
-app.get("/:user/show/*", (req, res) => {
-  let data = fs.readFileSync(`folders/${req.params.user}/${req.params[0]}`);
+//show
+app.get("/:user/file/show/:filename", (req, res) => {
+  let data = fs.readFileSync(`${localPath}/${req.params.filename}`);
   res.send(data);
 });
-
-app.get("/:user/:old/:new/rename", (req, res) => {
+//rename
+app.put("/:user/file/rename/:filename", (req, res) => {
   fs.renameSync(
-    `folders/${req.params.user}/${req.params.old}`,
-    `folders/${req.params.user}/${req.params.new}`
+    `${localPath}/${req.params.filename}`,
+    `${localPath}/${req.body.newName}`
   );
-  console.log("Rename complete!");
+  res.send("Rename complete!");
 });
-
-app.get("/:user/copy/*", (req, res) => {
+//copy
+app.get("/:user/file/copy/:filename", (req, res) => {
   fs.copyFileSync(
-    `folders/${req.params.user}/${req.params[0]}`,
-    `folders/${req.params.user}/copy_${req.params[0]}`
+    `${localPath}/${req.params.filename}`,
+    `${localPath}/copy_${req.params.filename}`
   );
-  res.send("successful copy!");
+  res.send("successful copied!");
+});
+//move
+app.put("/:user/file/move/:filename", (req, res) => {
+  fs.renameSync(`${localPath}/${req.params.filename}`, `${req.body.newPath}`);
+  res.send("move successful!!");
+});
+//delete
+app.delete("/:user/file/delete/:filename", (req, res) => {
+  fs.unlinkSync(`${localPath}/${req.params.filename}`);
+  res.send("File deleted successfully");
 });
 
-/**------------------post method------------------------ */
-app.post("/login", (req, res) => {
-  const users = getUsers();
+/**------------------folder rating---------------------- */
+//enter
+app.get("/:user/folder/enter/:folderName", (req, res) => {
+  localPath += `/${req.params.folderName}`;
+  res.send(localPath);
+});
+//show
+app.get("/:user/folder/show/:folderName", (req, res) => {
+  const files = fs.readdirSync(`${localPath}`, "utf-8");
+  const d = [];
+  files.forEach((element) => {
+    let info = fs.statSync(`${localPath}/${element}`);
+    let temp = {
+      name: element,
+      isFile: info.isFile(),
+    };
+    d.push(temp);
+  });
+  res.send(JSON.stringify(d));
+});
+//rename
+app.put("/:user/folder/rename/:folderName", (req, res) => {
+  fs.renameSync(
+    `${localPath}/${req.params.filename}`,
+    `${localPath}/${req.body.newName}`
+  );
+  res.send("Rename complete!");
+});
+//delet
+app.delete("/:user/folder/delete/:folderName", (req, res) => {
+  fs.rmdir(`${localPath}/${req.params.folderName}`, (err) => {
+    if (err) {
+      res.send("cen not delete this folder!!");
+    }
+    res.send("folder deleted successfully!");
+  });
+});
+//up
+app.get("/:user/folder/up/:folderName", (req, res) => {
+  localPath = localPath.substring(0, localPath.lastIndexOf("/"));
+  res.send(localPath);
+});
+/**------------------login method------------------------ */
+app.post("/login", async (req, res) => {
+  console.log("123");
+  const users = await getUsers();
+  console.log(users);
   const user = users.find((u) => {
     return u.username === req.body.username && u.password === req.body.password;
   });
@@ -116,11 +145,10 @@ app.post("/signup", (req, res) => {
     });
   }
 });
-
-/**---------------------------------DELETE method---------------------------------- */
-app.delete("/:user/delete/:item", (req, res)=>{
-
-})
+app.get("/:user/logout", (req, res) => {
+  localPath = "folders";
+  res.send("logout successfully!");
+});
 
 const port = process.PORT || 3000;
 app.listen(port, () => {
