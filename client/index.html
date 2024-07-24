@@ -31,11 +31,14 @@
 
       <div class="meinFolder" style="display: none">
         <h1 class="path"></h1>
-        <div class="content">
-          <div class="popup">
-            <span class="close">&times;</span>
-          </div>
-        </div>
+        <form class="uploadForm" style="width: 20%;">
+          <input type="file" id="fileInput" />
+          <button type="submit" class="uploadBtn">Upload</button>
+        </form>
+        <button class="backButton" onclick="goBack()">חזרה</button>
+
+        <div class="content"></div>
+        <div class="popup"></div>
         <!-- <p class="name"></p>
         <img
           src="/img/mienfolder.png"
@@ -53,6 +56,7 @@
       </template>
 
       <div class="file_actions" style="display: none">
+        <button class="close">X</button>
         <button class="action file show">show</button>
         <button class="action file info">info</button>
         <button class="action file rename">rename</button>
@@ -60,7 +64,8 @@
         <button class="action file move">move</button>
         <button class="action file delete">delete</button>
       </div>
-      <div class="folder_actions" style="display: none;">
+      <div class="folder_actions" style="display: none">
+        <button class="close">X</button>
         <button class="action folder show">show</button>
         <button class="action folder info">info</button>
         <button class="action folder rename">rename</button>

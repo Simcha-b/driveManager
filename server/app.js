@@ -3,6 +3,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const cors = require("cors");
+const multer = require("multer");
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,19 @@ app.use(express.static(path.join(__dirname, "../client")));
 let localPath = "folders";
 let cmd = path.join(__dirname, localPath);
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, localPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
+
+// app.get("/login",(req, res)=>{
+//   res.redirect("https://drive.google.com/drive/home")
+// })
 /**---------------------util method--------------------- */
 function getUsers() {
   return JSON.parse(fs.readFileSync("users.json", "utf-8"));
@@ -36,7 +50,7 @@ app.get("/:user/file/show/:filename", (req, res) => {
 app.put("/:user/file/rename/:filename", (req, res) => {
   fs.renameSync(
     `${localPath}/${req.params.filename}`,
-    `${localPath}/${req.body.newName}`
+    `${localPath}/${req.body.newname}`
   );
   res.send("Rename complete!");
 });
@@ -50,7 +64,7 @@ app.get("/:user/file/copy/:filename", (req, res) => {
 });
 //move
 app.put("/:user/file/move/:filename", (req, res) => {
-  fs.renameSync(`${localPath}/${req.params.filename}`, `${req.body.newPath}`);
+  fs.renameSync(`${localPath}/${req.params.filename}`, `${req.body.newpath}`);
   res.send("move successful!!");
 });
 //delete
@@ -79,11 +93,20 @@ app.get("/:user/folder/show/:folderName", (req, res) => {
   });
   res.send(JSON.stringify(d));
 });
+//info
+app.get("/:user/folder/info/:folderName", (req, res) => {
+  fs.stat(`${localPath}/${req.params.folderName}`, (err, info) => {
+    if (err) {
+      console.error(err);
+    }
+    res.send(info);
+  });
+});
 //rename
 app.put("/:user/folder/rename/:folderName", (req, res) => {
   fs.renameSync(
     `${localPath}/${req.params.filename}`,
-    `${localPath}/${req.body.newName}`
+    `${localPath}/${req.body.newname}`
   );
   res.send("Rename complete!");
 });
@@ -103,9 +126,7 @@ app.get("/:user/folder/up/:folderName", (req, res) => {
 });
 /**------------------login method------------------------ */
 app.post("/login", async (req, res) => {
-  console.log("123");
   const users = await getUsers();
-  console.log(users);
   const user = users.find((u) => {
     return u.username === req.body.username && u.password === req.body.password;
   });
@@ -148,6 +169,14 @@ app.post("/signup", (req, res) => {
 app.get("/:user/logout", (req, res) => {
   localPath = "folders";
   res.send("logout successfully!");
+});
+
+/**------------------upload----------------------------- */
+app.post("/:user/file/upload", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+  res.send("File uploaded successfully.");
 });
 
 const port = process.PORT || 3000;

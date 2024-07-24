@@ -10,16 +10,13 @@
     "username": "simcha-berkovitz",
     "password": "123789"
   },
-  {
-    "name": "beny-lahav",
-    "username": "beny-lahav",
-    "password": "456789"
-  },
+  { "name": "beny-lahav", "username": "beny-lahav", "password": "456789" },
   { "username": "yitzhak", "password": "123" },
   { "username": "yitzhak", "password": "555" },
   { "username": "ee", "password": "555" },
   { "username": "ss", "password": "123" },
   { "username": "ss", "password": "555" },
   { "username": "ee", "password": "777" },
-  { "username": "ee", "password": "7777" }
+  { "username": "ee", "password": "7777" },
+  { "username": "gafni", "password": "1234", "state": "/folders/gafni" }
 ]
